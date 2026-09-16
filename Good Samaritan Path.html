@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>เส้นทางพลเมืองดี | เกมสังคมศึกษา ม.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B2117;
+    --paper:#F3ECDC;
+    --paper-deep:#EAE0C8;
+    --paper-line:#D8CBA8;
+    --indigo:#1F3A52;
+    --indigo-light:#2F5573;
+    --gold:#C9973B;
+    --gold-deep:#A87B26;
+    --brick:#A6402F;
+    --leaf:#4F7A4F;
+    --violet:#6B4E9E;
+    --amber:#B9832E;
+    --white:#FFFBF2;
+    --shadow: 0 6px 0 rgba(43,33,23,0.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Sarabun', 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(201,151,59,0.10), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(31,58,82,0.08), transparent 40%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Noto Serif Thai', serif; margin:0; font-weight:700;}
+  #app{
+    width:100%;
+    max-width:520px;
+    min-height:100dvh;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    flex:1;
+    padding:22px 20px 32px;
+    animation: fadeIn .4s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- START SCREEN ---------- */
+  #start-screen{justify-content:center; align-items:center; text-align:center; gap:18px; flex:1;}
+  .seal{
+    width:96px; height:96px; border-radius:50%;
+    background:var(--indigo);
+    border:4px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:44px;
+    box-shadow: var(--shadow);
+  }
+  #start-screen h1{font-size:30px; line-height:1.3; color:var(--indigo);}
+  #start-screen .sub{font-size:15px; color:#5b4d3a; max-width:320px; line-height:1.6;}
+  .subject-tag{
+    display:inline-block; margin-top:2px;
+    font-size:13px; letter-spacing:.3px; color:var(--gold-deep);
+    border-top:1px solid var(--paper-line); border-bottom:1px solid var(--paper-line);
+    padding:4px 14px;
+  }
+  .btn{
+    font-family:'Sarabun',sans-serif;
+    border:none; cursor:pointer; touch-action:manipulation;
+    font-size:17px; font-weight:600;
+    padding:14px 30px;
+    border-radius:999px;
+    color:var(--white);
+    background:var(--indigo);
+    box-shadow:0 5px 0 var(--indigo-light-shadow, #12283a);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 1px 0 #12283a;}
+  .btn-gold{background:var(--gold-deep); box-shadow:0 5px 0 #7c5a19;}
+  .btn-gold:active{box-shadow:0 1px 0 #7c5a19;}
+  .btn-outline{
+    background:transparent; color:var(--indigo);
+    border:2px solid var(--indigo); box-shadow:none; padding:12px 28px;
+  }
+  .btn-outline:active{transform:translateY(2px);}
+
+  /* ---------- MAP SCREEN ---------- */
+  #map-screen{gap:18px;}
+  .map-header{display:flex; align-items:center; justify-content:space-between;}
+  .map-header h2{font-size:21px; color:var(--indigo);}
+  .progress-pill{
+    font-size:13px; font-weight:600; color:var(--indigo);
+    background:var(--white); border:1.5px solid var(--paper-line);
+    padding:5px 12px; border-radius:999px;
+  }
+  .badge-banner{
+    display:none;
+    background:linear-gradient(90deg, var(--gold-deep), var(--gold));
+    color:var(--white); border-radius:12px; padding:12px 16px;
+    font-size:14px; font-weight:600; text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .badge-banner.show{display:block; animation:fadeIn .5s ease;}
+  .path{
+    position:relative;
+    display:flex; flex-direction:column; align-items:center;
+    padding:10px 0 6px;
+    gap:34px;
+  }
+  .path::before{
+    content:'';
+    position:absolute; top:8px; bottom:8px; left:50%;
+    width:4px; transform:translateX(-50%);
+    background:repeating-linear-gradient(to bottom, var(--paper-line) 0 10px, transparent 10px 18px);
+    z-index:0;
+  }
+  .station{
+    position:relative; z-index:1;
+    display:flex; align-items:center; gap:14px;
+    width:100%;
+    animation:popIn .45s ease both;
+  }
+  .station:nth-child(1){animation-delay:.05s}
+  .station:nth-child(2){animation-delay:.12s}
+  .station:nth-child(3){animation-delay:.19s}
+  .station:nth-child(4){animation-delay:.26s}
+  .station:nth-child(5){animation-delay:.33s}
+  @keyframes popIn{from{opacity:0; transform:scale(.85);} to{opacity:1; transform:scale(1);}}
+  .station:nth-child(even){flex-direction:row-reverse; text-align:right;}
+  .node{
+    flex:0 0 auto;
+    width:74px; height:74px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:32px; color:var(--white);
+    border:4px solid var(--white);
+    box-shadow:var(--shadow);
+    cursor:pointer; touch-action:manipulation;
+    background:var(--station-color);
+    transition:transform .12s ease;
+  }
+  .node:active{transform:scale(.94);}
+  .station-info{flex:1; min-width:0;}
+  .station-info h3{font-size:16px; color:var(--ink); line-height:1.35;}
+  .stars-row{margin-top:4px; font-size:15px; letter-spacing:1px; color:var(--paper-line);}
+  .stars-row .lit{color:var(--gold-deep);}
+  .station-info p{margin:4px 0 0; font-size:12.5px; color:#7a6b53;}
+
+  /* ---------- QUIZ SCREEN ---------- */
+  #quiz-screen{gap:16px;}
+  .quiz-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .icon-btn{
+    width:38px; height:38px; border-radius:50%; border:1.5px solid var(--paper-line);
+    background:var(--white); font-size:17px; cursor:pointer; touch-action:manipulation;
+    display:flex; align-items:center; justify-content:center; color:var(--indigo);
+  }
+  .hearts{font-size:18px; letter-spacing:3px;}
+  .hearts .lost{opacity:.25;}
+  .score-tag{font-size:13px; font-weight:700; color:var(--indigo); background:var(--white); border:1.5px solid var(--paper-line); border-radius:999px; padding:4px 12px;}
+  .progress-bar{height:8px; background:var(--paper-deep); border-radius:999px; overflow:hidden; border:1px solid var(--paper-line);}
+  .progress-bar-fill{height:100%; background:var(--cat-color, var(--indigo)); width:0%; transition:width .35s ease;}
+  .q-count{font-size:12.5px; color:#7a6b53; text-align:right;}
+  .question-panel{
+    background:var(--white);
+    border:2px solid var(--paper-line);
+    border-radius:10px;
+    padding:22px 18px;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .cat-eyebrow{font-size:12.5px; font-weight:600; color:var(--cat-color, var(--indigo));}
+  .question-text{font-family:'Noto Serif Thai',serif; font-size:19px; line-height:1.55; margin-top:8px; color:var(--ink);}
+  .choices{display:flex; flex-direction:column; gap:11px; margin-top:6px;}
+  .choice-btn{
+    font-family:'Sarabun',sans-serif;
+    text-align:right;
+    direction:ltr;
+    font-size:15.5px; line-height:1.5;
+    padding:13px 16px;
+    background:var(--white);
+    border:2px solid var(--paper-line);
+    border-radius:10px;
+    color:var(--ink);
+    cursor:pointer; touch-action:manipulation;
+    display:flex; align-items:center; gap:10px;
+    text-align:left;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .choice-btn .letter{
+    flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    border:2px solid var(--paper-line); font-size:13px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; color:#7a6b53;
+  }
+  .choice-btn:active{transform:scale(.99);}
+  .choice-btn.correct{border-color:var(--leaf); background:#EEF5EC;}
+  .choice-btn.correct .letter{background:var(--leaf); border-color:var(--leaf); color:#fff;}
+  .choice-btn.wrong{border-color:var(--brick); background:#F8EAE7; animation:shake .35s ease;}
+  .choice-btn.wrong .letter{background:var(--brick); border-color:var(--brick); color:#fff;}
+  .choice-btn.disabled{pointer-events:none; opacity:.55;}
+  .choice-btn.disabled.correct, .choice-btn.disabled.wrong{opacity:1;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+
+  .feedback-panel{
+    margin-top:14px; padding:14px 16px; border-radius:10px;
+    background:var(--paper-deep); border-left:5px solid var(--cat-color, var(--indigo));
+    font-size:14px; line-height:1.6; display:none;
+  }
+  .feedback-panel.show{display:block; animation:fadeIn .3s ease;}
+  .feedback-title{font-weight:700; margin-bottom:3px;}
+  .feedback-title.ok{color:var(--leaf);}
+  .feedback-title.no{color:var(--brick);}
+  .next-wrap{margin-top:16px; text-align:center;}
+
+  /* ---------- RESULT SCREEN ---------- */
+  #result-screen{align-items:center; justify-content:center; text-align:center; gap:14px; flex:1;}
+  .result-stars{font-size:52px; letter-spacing:10px; color:var(--paper-line);}
+  .result-stars .lit{color:var(--gold-deep);}
+  #result-screen h2{font-size:24px; color:var(--indigo);}
+  .result-stat{font-size:15px; color:#5b4d3a;}
+  .result-msg{font-size:14px; color:#7a6b53; max-width:300px; line-height:1.6;}
+  .result-actions{display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; justify-content:center;}
+
+  .footer-note{margin-top:auto; padding-top:16px; text-align:center; font-size:11.5px; color:#a89a7c;}
+
+  /* ---------- STUDENT INFO SCREEN ---------- */
+  .form-group{display:flex; flex-direction:column; gap:6px; margin-bottom:14px; flex:1;}
+  .form-row{display:flex; gap:12px;}
+  .form-group label{font-size:13.5px; font-weight:600; color:var(--indigo);}
+  .form-group input{
+    font-family:'Sarabun',sans-serif; font-size:16px;
+    padding:12px 14px; border-radius:8px;
+    border:2px solid var(--paper-line); background:var(--white); color:var(--ink);
+    width:100%;
+  }
+  .form-group input:focus{outline:none; border-color:var(--gold-deep);}
+  .field-error{color:var(--brick); font-size:13px; min-height:18px; margin-bottom:2px;}
+  .student-greeting{font-size:12.5px; color:#7a6b53; margin-top:2px;}
+
+  /* ---------- CERTIFICATE ---------- */
+  #cert-screen{align-items:center; gap:20px; flex:1; justify-content:center;}
+  .cert-card{
+    width:100%; max-width:440px;
+    background:var(--white);
+    border:3px double var(--gold-deep);
+    border-radius:6px;
+    padding:30px 22px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .cert-seal{
+    width:60px; height:60px; border-radius:50%; margin:0 auto 6px;
+    background:var(--indigo); color:var(--white);
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+    border:3px solid var(--gold);
+  }
+  .cert-kicker{font-size:13px; letter-spacing:2px; color:var(--gold-deep); font-weight:700;}
+  .cert-title{font-size:18px; color:var(--indigo); margin-top:4px;}
+  .cert-name{
+    font-family:'Noto Serif Thai',serif; font-size:24px; font-weight:700;
+    color:var(--ink); margin-top:14px; padding-bottom:8px;
+    border-bottom:2px solid var(--paper-line); display:inline-block;
+  }
+  .cert-class{font-size:14px; color:#5b4d3a; margin-top:8px;}
+  .cert-body{font-size:14px; line-height:1.8; color:var(--ink); margin-top:16px;}
+  .cert-sign-row{display:flex; justify-content:space-between; gap:16px; margin-top:28px;}
+  .cert-sign{flex:1; font-size:12.5px; color:#7a6b53;}
+  .cert-line{border-bottom:1.5px solid var(--paper-line); height:28px; margin-bottom:6px;}
+  .cert-actions{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+
+  @media print{
+    body *{ visibility:hidden; }
+    #cert-screen, #cert-screen *{ visibility:visible; }
+    #cert-screen{ position:absolute; left:0; top:0; width:100%; padding:0; display:flex !important; }
+    .no-print{ display:none !important; }
+    .cert-card{ box-shadow:none; max-width:600px; margin:40px auto; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START SCREEN -->
+  <section id="start-screen" class="screen active">
+    <div class="seal">🏮</div>
+    <h1>เส้นทางพลเมืองดี</h1>
+    <div class="subject-tag">สังคมศึกษา ศาสนา และวัฒนธรรม · ชั้นมัธยมศึกษาปีที่ 1</div>
+    <p class="sub">ออกเดินทางผ่าน 5 ด่านความรู้ ตั้งแต่หน้าที่พลเมือง การปกครอง ทรัพย์สินทางปัญญา การคุ้มครองเด็ก ไปจนถึงวัฒนธรรมอาเซียน แล้วเก็บดาวให้ครบทุกด่าน</p>
+    <button class="btn" id="btn-start">เริ่มการเดินทาง</button>
+  </section>
+
+  <!-- STUDENT INFO SCREEN -->
+  <section id="student-screen" class="screen">
+    <h2 style="color:var(--indigo); font-size:22px;">กรอกข้อมูลก่อนเริ่มเล่น</h2>
+    <p class="sub" style="text-align:left; margin:6px 0 18px;">ข้อมูลนี้จะใช้แสดงบนเกียรติบัตรเมื่อเล่นจบครบทุกด่าน</p>
+    <div class="form-group">
+      <label for="input-name">ชื่อ-นามสกุล</label>
+      <input type="text" id="input-name" placeholder="เช่น เด็กชายใจดี รักเรียน">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="input-class">ชั้น</label>
+        <input type="text" id="input-class" placeholder="เช่น ม.1/3">
+      </div>
+      <div class="form-group">
+        <label for="input-number">เลขที่</label>
+        <input type="text" id="input-number" placeholder="เช่น 12" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field-error" id="student-error"></div>
+    <button class="btn" id="btn-student-continue" style="margin-top:4px;">เข้าสู่แผนที่การเดินทาง</button>
+  </section>
+
+  <!-- MAP SCREEN -->
+  <section id="map-screen" class="screen">
+    <div class="map-header">
+      <div>
+        <h2>แผนที่การเดินทาง</h2>
+        <div class="student-greeting" id="student-greeting"></div>
+      </div>
+      <div class="progress-pill" id="map-progress">0/5 ด่าน</div>
+    </div>
+    <div class="badge-banner" id="badge-banner">
+      🏆 ยินดีด้วย! คุณได้รับ "ตราพลเมืองดี" ครบทุกด่านแล้ว
+      <div style="margin-top:10px;">
+        <button class="btn btn-gold" id="btn-open-cert" style="padding:10px 22px; font-size:14px;">ดูและพิมพ์เกียรติบัตร</button>
+      </div>
+    </div>
+    <div class="path" id="path"></div>
+    <div class="footer-note">แตะที่ด่านใดก็ได้เพื่อเริ่มทำแบบทดสอบ</div>
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section id="quiz-screen" class="screen">
+    <div class="quiz-top">
+      <button class="icon-btn" id="btn-back">←</button>
+      <div class="hearts" id="hearts"></div>
+      <div class="score-tag" id="score-tag">คะแนน 0</div>
+    </div>
+    <div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="q-count" id="q-count"></div>
+    </div>
+    <div class="question-panel" id="question-panel">
+      <div class="cat-eyebrow" id="cat-eyebrow"></div>
+      <div class="question-text" id="question-text"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback-panel" id="feedback-panel">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div id="feedback-text"></div>
+      </div>
+      <div class="next-wrap" id="next-wrap" style="display:none;">
+        <button class="btn btn-gold" id="btn-next">ข้อถัดไป</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section id="result-screen" class="screen">
+    <div class="result-stars" id="result-stars">★★★</div>
+    <h2 id="result-title">เยี่ยมมาก!</h2>
+    <div class="result-stat" id="result-stat">ตอบถูก 8/10 ข้อ</div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-actions">
+      <button class="btn btn-outline" id="btn-retry">ลองอีกครั้ง</button>
+      <button class="btn" id="btn-tomap">กลับสู่แผนที่</button>
+    </div>
+  </section>
+
+  <!-- CERTIFICATE SCREEN -->
+  <section id="cert-screen" class="screen">
+    <div class="cert-card" id="cert-card">
+      <div class="cert-seal">🏮</div>
+      <div class="cert-kicker">เกียรติบัตร</div>
+      <h2 class="cert-title">มอบให้เพื่อแสดงว่า</h2>
+      <div class="cert-name" id="cert-name">ชื่อ-นามสกุล</div>
+      <div class="cert-class" id="cert-class">ชั้น ม.1 เลขที่ -</div>
+      <p class="cert-body">ได้เดินทางผ่านเกม <strong>“เส้นทางพลเมืองดี”</strong><br>รายวิชาสังคมศึกษา ศาสนา และวัฒนธรรม (ส21101) ระดับชั้นมัธยมศึกษาปีที่ 1<br>ครบทั้ง 5 ด่าน ได้รับดาวสะสม <span id="cert-stars">0</span> จาก 15 ดวง</p>
+      <div class="cert-sign-row">
+        <div class="cert-sign">
+          <div class="cert-line"></div>
+          <div>ลงชื่อผู้สอน</div>
+        </div>
+        <div class="cert-sign">
+          <div class="cert-line"></div>
+          <div>วันที่ <span id="cert-date"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cert-actions no-print">
+      <button class="btn btn-outline" id="btn-cert-back">กลับสู่แผนที่</button>
+      <button class="btn btn-gold" id="btn-cert-print">พิมพ์ / บันทึกเป็น PDF</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DATA = [
+    {
+      id:'civic', name:'หน้าที่พลเมืองและจิตสาธารณะ', icon:'🤝', color:'#4F7A4F',
+      questions:[
+        {q:'"พลเมืองดี" มีลักษณะอย่างไร', choices:['รับผิดชอบต่อสังคมและมีศีลธรรม','เอาแต่ใจตนเองเป็นหลัก','ทำตามกฎเฉพาะเมื่อมีคนเห็น','สนใจแต่ผลประโยชน์ส่วนตัว'], explain:'พลเมืองดีคือผู้ที่รับผิดชอบต่อสังคมและมีศีลธรรมกำกับการกระทำของตนเอง'},
+        {q:'การกระทำใดแสดงถึง "จิตสาธารณะ"', choices:['เห็นคนตัดไม้ทำลายป่าจึงไปแจ้งเจ้าหน้าที่','เดินผ่านเฉย ๆ ไม่ใส่ใจ','ถ่ายรูปแล้วลงโซเชียลอย่างเดียว','รอให้คนอื่นจัดการ'], explain:'ผู้มีจิตสาธารณะจะลงมือแจ้งเจ้าหน้าที่เพื่อปกป้องส่วนรวม ไม่ใช่แค่รับรู้เฉย ๆ'},
+        {q:'ข้อใด "ไม่ใช่" ลักษณะของผู้มีจิตสาธารณะ', choices:['คิดถึงตนเองเป็นสำคัญ','ช่วยเหลือส่วนรวมโดยไม่หวังผลตอบแทน','เสียสละเวลาเพื่อผู้อื่น','ร่วมมือแก้ปัญหาของชุมชน'], explain:'การคิดถึงตนเองเป็นสำคัญขัดกับแนวคิดจิตสาธารณะที่เน้นประโยชน์ส่วนรวม'},
+        {q:'ข้อใด "ไม่ใช่" วิธีอนุรักษ์ทรัพยากรธรรมชาติ', choices:['นำทรัพยากรมาใช้ให้มากที่สุดเท่าที่จะทำได้','ใช้ทรัพยากรอย่างประหยัดและคุ้มค่า','ปลูกป่าทดแทน','ใช้ซ้ำและนำกลับมาใช้ใหม่'], explain:'การใช้ทรัพยากรให้มากที่สุดโดยไม่คำนึงถึงความยั่งยืน ตรงข้ามกับหลักการอนุรักษ์'},
+        {q:'สิ่งที่ควรปฏิบัติเพื่อมีส่วนร่วมทางการเมืองในระบอบประชาธิปไตย', choices:['รณรงค์ชักชวนให้คนไปใช้สิทธิเลือกตั้ง','บอกให้เพื่อนไม่ต้องไปเลือกตั้ง','ขายเสียงเพื่อแลกเงิน','เฉยเมยต่อการเมืองทุกเรื่อง'], explain:'การรณรงค์ให้ประชาชนไปใช้สิทธิเลือกตั้งเป็นการส่งเสริมการมีส่วนร่วมทางการเมืองที่ถูกต้อง'},
+        {q:'หากพบว่าสนามโรงเรียนสกปรก นักเรียนที่ดีควรทำอย่างไร', choices:['ชักชวนเพื่อนร่วมกันทำความสะอาด','แจ้งให้ภารโรงทำคนเดียว','เดินเลี่ยงไปทางอื่น','ทิ้งขยะเพิ่มเพราะสกปรกอยู่แล้ว'], explain:'การชักชวนเพื่อนร่วมมือกันแก้ปัญหาแสดงถึงความรับผิดชอบต่อส่วนรวม'},
+        {q:'การเข้าแถวซื้ออาหารกลางวันตามลำดับก่อนหลัง แสดงถึงอะไร', choices:['การเคารพสิทธิของผู้อื่น','การไม่มีมารยาท','การเสียเวลาโดยเปล่าประโยชน์','การแข่งขันกับผู้อื่น'], explain:'การเข้าแถวตามลำดับคือการเคารพสิทธิของผู้อื่นในการรับบริการอย่างเท่าเทียม'},
+        {q:'การแจ้งเจ้าหน้าที่เมื่อพบคนลักลอบตัดสายไฟฟ้าสาธารณะ ถือเป็นอะไร', choices:['การรักษาสาธารณสมบัติ','การก้าวก่ายเรื่องผู้อื่น','การทำลายทรัพย์สินราชการ','หน้าที่ของตำรวจเท่านั้น'], explain:'สายไฟฟ้าเป็นสาธารณสมบัติ การแจ้งเจ้าหน้าที่ช่วยปกป้องทรัพย์สินส่วนรวม'},
+        {q:'เมื่อเพื่อนป่วยกะทันหันในห้องเรียน ควรปฏิบัติอย่างไร', choices:['พาเพื่อนไปห้องพยาบาล','ปล่อยให้เพื่อนนอนพักเอง','บอกให้เพื่อนอดทน','ถ่ายคลิปไว้ก่อน'], explain:'การพาเพื่อนไปห้องพยาบาลแสดงถึงความเอื้อเฟื้อเผื่อแผ่และความรับผิดชอบต่อผู้อื่น'},
+        {q:'บทบาทสำคัญของนักเรียนในฐานะเยาวชนที่ดีของสังคมคืออะไร', choices:['ตั้งใจศึกษาเล่าเรียนอย่างเต็มความสามารถ','สนใจแต่ความบันเทิง','ทำตามเพื่อนโดยไม่คิด','ละเลยการบ้านเป็นประจำ'], explain:'การตั้งใจศึกษาเล่าเรียนคือบทบาทหน้าที่พื้นฐานของเยาวชนที่ดี'}
+      ]
+    },
+    {
+      id:'gov', name:'การเมืองการปกครอง', icon:'🏛️', color:'#1F3A52',
+      questions:[
+        {q:'อำนาจสูงสุดในการปกครองประเทศเรียกว่าอะไร', choices:['อำนาจอธิปไตย','อำนาจบริหาร','อำนาจทหาร','อำนาจท้องถิ่น'], explain:'อำนาจอธิปไตยเป็นอำนาจสูงสุดในการปกครองประเทศ ซึ่งเป็นของประชาชน'},
+        {q:'องค์กรใดเป็นผู้ใช้อำนาจนิติบัญญัติ', choices:['รัฐสภา','ศาล','คณะรัฐมนตรี','สำนักนายกรัฐมนตรี'], explain:'รัฐสภาทำหน้าที่ออกกฎหมายในนามของประชาชน จึงเป็นผู้ใช้อำนาจนิติบัญญัติ'},
+        {q:'องค์กรใดเป็นผู้ใช้อำนาจตุลาการ', choices:['ศาล','รัฐสภา','คณะรัฐมนตรี','พรรคการเมือง'], explain:'ศาลมีหน้าที่พิจารณาพิพากษาอรรถคดี จึงเป็นผู้ใช้อำนาจตุลาการ'},
+        {q:'การถ่วงดุลอำนาจอธิปไตยทั้งสามฝ่ายมีประโยชน์อย่างไร', choices:['ป้องกันไม่ให้องค์กรใดใช้อำนาจเกินขอบเขต','ทำให้การทำงานล่าช้าโดยไม่จำเป็น','ลดจำนวนกฎหมาย','เพิ่มอำนาจให้ฝ่ายบริหารฝ่ายเดียว'], explain:'การถ่วงดุลอำนาจช่วยตรวจสอบและป้องกันการใช้อำนาจเกินขอบเขตของแต่ละองค์กร'},
+        {q:'องค์กรใดใช้อำนาจบริหารแทนประชาชน', choices:['คณะรัฐมนตรี','วุฒิสภา','ศาลปกครอง','ศาลรัฐธรรมนูญ'], explain:'คณะรัฐมนตรีเป็นผู้ใช้อำนาจบริหารในการดำเนินนโยบายของประเทศ'},
+        {q:'วุฒิสภามีอำนาจหน้าที่สำคัญประการหนึ่งคืออะไร', choices:['พิจารณาให้ความเห็นชอบเพื่อถอดถอนผู้ดำรงตำแหน่งทางการเมือง','บริหารราชการแผ่นดินโดยตรง','พิพากษาคดีอาญา','ออกใบอนุญาตประกอบธุรกิจ'], explain:'วุฒิสภามีบทบาทในการตรวจสอบและถอดถอนผู้ดำรงตำแหน่งทางการเมืองที่กระทำผิด'},
+        {q:'ใครคือเจ้าของอำนาจอธิปไตยที่แท้จริง', choices:['ประชาชน','พระมหากษัตริย์เพียงผู้เดียว','นายกรัฐมนตรี','ข้าราชการ'], explain:'ในระบอบประชาธิปไตย ประชาชนเป็นเจ้าของอำนาจอธิปไตย'},
+        {q:'กฎหมายสูงสุดของการปกครองประเทศไทยคืออะไร', choices:['รัฐธรรมนูญ','พระราชบัญญัติ','พระราชกำหนด','กฎกระทรวง'], explain:'รัฐธรรมนูญเป็นกฎหมายสูงสุดที่กฎหมายอื่นต้องไม่ขัดหรือแย้ง'},
+        {q:'ข้อพิพาทระหว่างหน่วยงานปกครองหรือเจ้าหน้าที่รัฐกับเอกชน ต้องฟ้องที่ศาลใด', choices:['ศาลปกครอง','ศาลแพ่ง','ศาลอาญา','ศาลเยาวชน'], explain:'ศาลปกครองมีอำนาจพิจารณาคดีพิพาทระหว่างรัฐกับเอกชน'},
+        {q:'รัฐธรรมนูญแห่งราชอาณาจักรไทย พ.ศ. 2560 มีกี่หมวด กี่มาตรา', choices:['16 หมวด 279 มาตรา','10 หมวด 200 มาตรา','20 หมวด 300 มาตรา','12 หมวด 250 มาตรา'], explain:'รัฐธรรมนูญ พ.ศ. 2560 ซึ่งเป็นฉบับที่ 20 ประกอบด้วย 16 หมวด 279 มาตรา'}
+      ]
+    },
+    {
+      id:'ip', name:'ทรัพย์สินทางปัญญา', icon:'📜', color:'#A6402F',
+      questions:[
+        {q:'การแต่งเพลงจัดเป็นผลงานที่ได้รับความคุ้มครองประเภทใด', choices:['ลิขสิทธิ์','สิทธิบัตร','เครื่องหมายการค้า','สิทธิบัตรการออกแบบผลิตภัณฑ์'], explain:'งานสร้างสรรค์ เช่น เพลง วรรณกรรม จัดเป็นงานอันมีลิขสิทธิ์'},
+        {q:'นาย ข นำปากกาที่นาย ก จดสิทธิบัตรไว้ไปผลิตขายโดยเปลี่ยนเพียงสีด้าม การกระทำนี้ถือเป็นอะไร', choices:['การละเมิดสิทธิบัตร','การพัฒนาสินค้าใหม่','การไม่ผิดกฎหมายเพราะเปลี่ยนสี','ลิขสิทธิ์ร่วม'], explain:'การเปลี่ยนเพียงรายละเอียดเล็กน้อยโดยไม่ได้รับอนุญาตยังถือเป็นการละเมิดสิทธิบัตร'},
+        {q:'โดยทั่วไปสิทธิบัตรการประดิษฐ์ในประเทศไทยมีอายุคุ้มครองกี่ปี', choices:['20 ปีนับจากวันยื่นขอ','5 ปีนับจากวันยื่นขอ','10 ปีนับจากวันได้รับอนุมัติ','ตลอดชีวิตผู้ประดิษฐ์'], explain:'สิทธิบัตรการประดิษฐ์มีอายุความคุ้มครอง 20 ปี นับจากวันยื่นขอรับสิทธิบัตร'},
+        {q:'เมษานำไฟล์ต้นฉบับการ์ตูนภาคต่อของมีนา (พี่สาว) มาเผยแพร่เองโดยไม่ได้รับอนุญาต การกระทำนี้เป็นอย่างไร', choices:['ไม่ถูกต้อง เพราะละเมิดลิขสิทธิ์ของเจ้าของผลงาน','ถูกต้อง เพราะเป็นคนในครอบครัว','ถูกต้อง เพราะแฟน ๆ ต้องการอ่าน','ไม่ผิดเพราะไม่ได้ขาย'], explain:'มีนาเป็นเจ้าของลิขสิทธิ์ การเผยแพร่โดยไม่ได้รับอนุญาตจากเจ้าของถือว่าไม่ถูกต้อง'},
+        {q:'การใช้สิทธิของตนเองตามความพอใจโดยไม่คำนึงถึงผู้อื่น จัดเป็นอย่างไรตามหลักกฎหมายคุ้มครองสิทธิ', choices:['ไม่จัดเป็นประโยชน์ของการปฏิบัติตามกฎหมายคุ้มครองสิทธิ','เป็นสิทธิที่ทำได้เสมอ','เป็นการใช้สิทธิที่ถูกต้องที่สุด','กฎหมายไม่เกี่ยวข้องกับเรื่องนี้'], explain:'การใช้สิทธิต้องไม่ละเมิดสิทธิของผู้อื่น มิเช่นนั้นจะขัดกับเจตนารมณ์ของกฎหมาย'},
+        {q:'ผลงานประเภทใดที่ได้รับความคุ้มครองในรูปแบบ "ลิขสิทธิ์"', choices:['วรรณกรรม ดนตรีกรรม และศิลปกรรม','สิ่งประดิษฐ์ที่ใช้งานได้จริงเท่านั้น','ชื่อทางการค้า','สูตรเคมีที่คิดค้นขึ้นใหม่'], explain:'ลิขสิทธิ์คุ้มครองงานสร้างสรรค์ เช่น วรรณกรรม ดนตรีกรรม ศิลปกรรม'},
+        {q:'สิทธิบัตรคุ้มครองสิ่งใดเป็นหลัก', choices:['การประดิษฐ์หรือการออกแบบผลิตภัณฑ์ใหม่','บทเพลงและวรรณกรรม','ชื่อเสียงส่วนบุคคล','ที่ดินและอสังหาริมทรัพย์'], explain:'สิทธิบัตรคุ้มครองสิ่งประดิษฐ์หรือการออกแบบผลิตภัณฑ์ที่มีความใหม่และใช้ประโยชน์ได้'},
+        {q:'หากต้องการนำผลงานเพลงของผู้อื่นไปใช้ประกอบวิดีโอเผยแพร่สาธารณะ ควรทำอย่างไร', choices:['ขออนุญาตเจ้าของลิขสิทธิ์ก่อน','ใช้ได้เลยเพราะเป็นเพลงดัง','ใช้ได้ถ้าไม่เสียเงิน','ใช้ได้ถ้าใส่ชื่อผู้แต่งไว้เท่านั้น'], explain:'การนำผลงานลิขสิทธิ์ของผู้อื่นไปใช้เผยแพร่ต้องได้รับอนุญาตจากเจ้าของสิทธิ์ก่อนเสมอ'},
+        {q:'การจดสิทธิบัตรมีจุดประสงค์หลักเพื่ออะไร', choices:['คุ้มครองสิทธิของผู้ประดิษฐ์จากการถูกลอกเลียนแบบ','ทำให้สินค้าขายดีขึ้นทันที','เพิ่มภาษีให้กับผู้ประดิษฐ์','บังคับให้ทุกคนซื้อสินค้านั้น'], explain:'สิทธิบัตรคุ้มครองผลประโยชน์ของผู้ประดิษฐ์ ป้องกันไม่ให้ผู้อื่นลอกเลียนแบบโดยไม่ได้รับอนุญาต'},
+        {q:'ข้อใดเป็นการเคารพทรัพย์สินทางปัญญาของผู้อื่นอย่างถูกต้อง', choices:['ซื้อซอฟต์แวร์ลิขสิทธิ์แทนการใช้ของปลอม','ดาวน์โหลดหนังละเมิดลิขสิทธิ์มาดูฟรี','คัดลอกรายงานเพื่อนมาส่งเป็นของตนเอง','ผลิตสินค้าเลียนแบบแบรนด์ดังขาย'], explain:'การซื้อสินค้าหรือซอฟต์แวร์ที่ถูกลิขสิทธิ์ คือการเคารพทรัพย์สินทางปัญญาของผู้สร้างสรรค์'}
+      ]
+    },
+    {
+      id:'child', name:'การคุ้มครองเด็กและการศึกษา', icon:'🎒', color:'#B9832E',
+      questions:[
+        {q:'ตาม พ.ร.บ.คุ้มครองเด็ก พ.ศ. 2546 คำว่า "เด็ก" หมายถึงบุคคลใด', choices:['บุคคลที่มีอายุต่ำกว่า 18 ปีบริบูรณ์','บุคคลที่มีอายุต่ำกว่า 15 ปีบริบูรณ์','บุคคลที่มีอายุต่ำกว่า 20 ปีบริบูรณ์','บุคคลที่ยังไม่บรรลุนิติภาวะเท่านั้น'], explain:'"เด็ก" ตามกฎหมายฉบับนี้หมายถึงบุคคลที่มีอายุต่ำกว่า 18 ปีบริบูรณ์'},
+        {q:'การถูกแม่สั่งให้อดอาหารเพื่อประหยัดค่าใช้จ่ายในครอบครัว จัดเป็นเด็กประเภทใด', choices:['เด็กที่ถูกละเลย','เด็กที่ได้รับการดูแลอย่างดี','เด็กที่มีวินัยในตนเอง','เด็กที่ได้รับสวัสดิการเต็มที่'], explain:'การถูกละเลยไม่ให้ได้รับปัจจัยพื้นฐานอย่างอาหาร ถือเป็นการละเลยเด็กตามบทบาทหน้าที่ของผู้ปกครอง'},
+        {q:'หากใช้เครื่องสำอางแล้วเกิดอาการแพ้อย่างรุนแรง ควรร้องเรียนที่หน่วยงานใด', choices:['สำนักงานคณะกรรมการอาหารและยา (อย.)','กระทรวงศึกษาธิการ','สำนักงานตำรวจแห่งชาติ','กรมการปกครอง'], explain:'อย. เป็นหน่วยงานที่ดูแลความปลอดภัยของผลิตภัณฑ์อาหารและยา รวมถึงเครื่องสำอาง'},
+        {q:'การศึกษาที่ผู้เรียนได้เรียนรู้ด้วยตนเองตามความสนใจและศักยภาพ เรียกว่าอะไร', choices:['การศึกษาตามอัธยาศัย','การศึกษาในระบบ','การศึกษานอกระบบ','การศึกษาภาคบังคับ'], explain:'การศึกษาตามอัธยาศัยเน้นให้ผู้เรียนเรียนรู้ได้เองตามความสนใจและโอกาสของตน'},
+        {q:'เด็กหญิง ก เรียนอยู่ชั้นประถมศึกษาปีที่ 6 ที่โรงเรียนวัด จัดเป็นการศึกษาประเภทใด', choices:['การศึกษาในระบบ','การศึกษานอกระบบ','การศึกษาตามอัธยาศัย','การศึกษาผู้ใหญ่'], explain:'การเรียนตามหลักสูตรในโรงเรียนที่กำหนดระดับชั้นชัดเจน ถือเป็นการศึกษาในระบบ'},
+        {q:'เด็กที่ถูกพ่อเลี้ยงทำร้ายร่างกาย จัดอยู่ในกลุ่มใด', choices:['เด็กที่พึงได้รับการคุ้มครองสวัสดิภาพ','เด็กที่มีความประพฤติเสี่ยง','เด็กกำพร้า','เด็กที่ต้องการการศึกษาพิเศษเท่านั้น'], explain:'เด็กที่ถูกทำร้ายร่างกายจัดอยู่ในกลุ่มเด็กที่พึงได้รับการคุ้มครองสวัสดิภาพตามกฎหมาย'},
+        {q:'การศึกษาภาคบังคับของไทยกำหนดให้เรียนเป็นเวลากี่ปี', choices:['9 ปี','6 ปี','12 ปี','15 ปี'], explain:'บิดามารดาหรือผู้ปกครองต้องให้บุตรได้รับการศึกษาภาคบังคับ 9 ปี'},
+        {q:'โรงเรียนที่รับนักเรียนหลากหลายฐานะ รวมถึงชาวเขาและเด็กพิการทางสายตา สอดคล้องกับหลักการใด', choices:['ประโยชน์สูงสุดของเด็กและไม่เลือกปฏิบัติ','การคัดเลือกเฉพาะเด็กเก่ง','การจำกัดสิทธิทางการศึกษา','การแบ่งแยกตามฐานะทางเศรษฐกิจ'], explain:'การเปิดรับเด็กทุกกลุ่มอย่างเท่าเทียมสะท้อนหลักประโยชน์สูงสุดของเด็กและไม่เลือกปฏิบัติ'},
+        {q:'นางดวงคลอดบุตรแล้วหนีออกจากโรงพยาบาลโดยทิ้งบุตรไว้ การกระทำนี้แสดงถึงอะไร', choices:['การทอดทิ้งเด็กและไม่ปฏิบัติตามหน้าที่ผู้ปกครอง','ความรับผิดชอบของผู้ปกครองที่ดี','การให้อิสระแก่บุตร','การกระทำที่ไม่ผิดกฎหมายใด ๆ'], explain:'การทิ้งบุตรไว้โดยไม่ดูแล ถือเป็นการทอดทิ้งเด็กและละเลยหน้าที่ของผู้ปกครอง'},
+        {q:'นโยบาย "เรียนดี เรียนฟรี 15 ปี" สอดคล้องกับสิทธิใดทางการศึกษา', choices:['สิทธิและโอกาสเท่าเทียมกันในการรับการศึกษาขั้นพื้นฐานไม่น้อยกว่า 12 ปี','สิทธิในการเลือกเรียนต่างประเทศฟรี','สิทธิในการไม่ต้องสอบวัดผล','สิทธิเฉพาะเด็กที่เรียนดีเท่านั้น'], explain:'นโยบายนี้สนับสนุนให้ทุกคนมีสิทธิและโอกาสเท่าเทียมกันในการเข้าถึงการศึกษาขั้นพื้นฐาน'}
+      ]
+    },
+    {
+      id:'culture', name:'วัฒนธรรมอาเซียน', icon:'🌏', color:'#6B4E9E',
+      questions:[
+        {q:'วัฒนธรรมมีความสำคัญต่อสังคมอย่างไร', choices:['เป็นเอกลักษณ์ของชาติและเครื่องมือสร้างความสามัคคี','เป็นอุปสรรคต่อการพัฒนาประเทศ','ไม่มีผลต่อการดำเนินชีวิต','เป็นเรื่องของคนรุ่นเก่าเท่านั้น'], explain:'วัฒนธรรมเป็นเอกลักษณ์ของชาติ เป็นกรอบแนวทางการดำเนินชีวิต และช่วยสร้างความสามัคคีในหมู่ประชาชน'},
+        {q:'อาหารไทยจัดเป็นวัฒนธรรมประเภทใด', choices:['วัฒนธรรมทางวัตถุ','วัฒนธรรมทางจิตใจ','วัฒนธรรมทางภาษา','วัฒนธรรมทางการเมือง'], explain:'อาหาร เครื่องแต่งกาย และสิ่งของที่จับต้องได้ จัดเป็นวัฒนธรรมทางวัตถุ'},
+        {q:'ภาษาลาวมีความคล้ายคลึงกับภาษาในท้องถิ่นภาคใดของไทยมากที่สุด', choices:['ภาคตะวันออกเฉียงเหนือ (อีสาน)','ภาคใต้','ภาคกลาง','ภาคตะวันตก'], explain:'ภาษาลาวมีรากฐานใกล้เคียงกับภาษาถิ่นอีสานของไทย เนื่องจากมีประวัติศาสตร์และพื้นที่ติดต่อกัน'},
+        {q:'การแสดง "รามายณะ" ถือเป็นวัฒนธรรมร่วมของภูมิภาคใด', choices:['เอเชียตะวันออกเฉียงใต้','แอฟริกาเหนือ','ยุโรปตะวันตก','อเมริกาใต้'], explain:'เรื่องรามายณะ (เช่น รามเกียรติ์ในไทย) เป็นวัฒนธรรมร่วมที่พบในหลายประเทศแถบเอเชียตะวันออกเฉียงใต้'},
+        {q:'กัมพูชาและเมียนมาร์มีความคล้ายคลึงทางวัฒนธรรมด้านใดมากที่สุด', choices:['วัฒนธรรมทางศาสนา','วัฒนธรรมทางการแต่งกายเท่านั้น','ภาษาที่ใช้เขียน','อาหารประจำชาติ'], explain:'ทั้งสองประเทศต่างนับถือพระพุทธศาสนาเถรวาทเป็นหลัก จึงมีวัฒนธรรมทางศาสนาที่คล้ายคลึงกัน'},
+        {q:'วัฒนธรรมประเภทใดที่อาจสร้างความเข้าใจผิดระหว่างกันได้ง่ายที่สุด', choices:['วัฒนธรรมทางจิตใจ ภาษา และจารีตประเพณี','วัฒนธรรมทางอาหาร','วัฒนธรรมทางการแต่งกาย','วัฒนธรรมทางสถาปัตยกรรม'], explain:'วัฒนธรรมที่จับต้องไม่ได้ เช่น ความคิด ภาษา และจารีตประเพณี มักตีความต่างกันจนเกิดความเข้าใจผิดได้ง่าย'},
+        {q:'การเคยเป็นอาณานิคมของชาติตะวันตกส่งผลให้บางประเทศในอาเซียนเป็นอย่างไร', choices:['ใช้ภาษาอังกฤษกันอย่างแพร่หลาย','ไม่มีวัฒนธรรมของตนเองเหลืออยู่เลย','ปฏิเสธการติดต่อกับต่างชาติทั้งหมด','สูญเสียเอกราชอย่างถาวร'], explain:'ประเทศที่เคยตกเป็นอาณานิคม เช่น ฟิลิปปินส์ สิงคโปร์ มักใช้ภาษาอังกฤษอย่างแพร่หลายจนถึงปัจจุบัน'},
+        {q:'แนวทางใดช่วยสร้างมิตรภาพที่ยั่งยืนด้านศิลปวัฒนธรรมระหว่างประเทศ', choices:['การจัดงานแสดงแลกเปลี่ยนศิลปวัฒนธรรมระหว่างกัน','การปิดกั้นไม่ให้ต่างชาติเข้ามาเรียนรู้วัฒนธรรม','การเปรียบเทียบว่าวัฒนธรรมใครดีกว่ากัน','การใช้เพียงภาษาราชการของตนเองเท่านั้น'], explain:'การแลกเปลี่ยนศิลปวัฒนธรรมช่วยให้เกิดความเข้าใจและสัมพันธไมตรีที่ดีระหว่างประเทศ'},
+        {q:'วัฒนธรรมไทยข้อใดช่วยสร้างความสัมพันธ์ที่ดีกับคนต่างวัฒนธรรมได้มากที่สุด', choices:['การยิ้มและทักทาย','การพูดเสียงดัง','การเมินเฉยต่อผู้มาเยือน','การตั้งกฎเกณฑ์ที่เคร่งครัด'], explain:'การยิ้มแย้มและทักทายเป็นเอกลักษณ์ของไทยที่สร้างความประทับใจแรกพบให้แก่ผู้อื่นได้ดี'},
+        {q:'ผู้ที่นับถือศาสนาอิสลามมีข้อปฏิบัติด้านอาหารอย่างไร', choices:['ไม่รับประทานเนื้อหมู (สุกร)','ไม่รับประทานเนื้อวัว','ไม่รับประทานอาหารทะเล','รับประทานได้ทุกชนิดโดยไม่มีข้อห้าม'], explain:'หลักศาสนาอิสลามห้ามการบริโภคเนื้อสุกรตามหลักฮาลาล'}
+      ]
+    }
+  ];
+
+  var LETTERS = ['ก','ข','ค','ง'];
+  var progress = {}; // id -> stars (0-3)
+  DATA.forEach(function(c){ progress[c.id] = 0; });
+
+  var state = {
+    student:{ name:'', klass:'', number:'' },
+    catIndex:0,
+    order:[],
+    qIndex:0,
+    correctCount:0,
+    hearts:3,
+    score:0,
+    streak:0,
+    failed:false,
+    answered:false
+  };
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function $(id){ return document.getElementById(id); }
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    $(id).classList.add('active');
+  }
+
+  /* ---------------- MAP ---------------- */
+  function renderMap(){
+    var pathEl = $('path');
+    pathEl.innerHTML = '';
+    var completed = 0;
+    DATA.forEach(function(cat){
+      if(progress[cat.id] > 0) completed++;
+      var st = document.createElement('div');
+      st.className = 'station';
+      var starsHtml = '';
+      for(var i=1;i<=3;i++){
+        starsHtml += '<span class="'+(i<=progress[cat.id]?'lit':'')+'">★</span>';
+      }
+      st.innerHTML =
+        '<div class="node" data-cat="'+cat.id+'" style="--station-color:'+cat.color+'; background:'+cat.color+';">'+cat.icon+'</div>'+
+        '<div class="station-info">'+
+          '<h3>'+cat.name+'</h3>'+
+          '<div class="stars-row">'+starsHtml+'</div>'+
+          '<p>'+cat.questions.length+' คำถาม</p>'+
+        '</div>';
+      pathEl.appendChild(st);
+    });
+    $('map-progress').textContent = completed + '/' + DATA.length + ' ด่าน';
+    if(state.student && state.student.name){
+      $('student-greeting').textContent = 'ผู้เล่น ' + state.student.name + '  ชั้น ' + state.student.klass + '  เลขที่ ' + state.student.number;
+    }
+    var allDone = DATA.every(function(c){ return progress[c.id] > 0; });
+    $('badge-banner').classList.toggle('show', allDone);
+
+    pathEl.querySelectorAll('.node').forEach(function(node){
+      node.addEventListener('click', function(){
+        startCategory(node.getAttribute('data-cat'));
+      });
+    });
+  }
+
+  /* ---------------- QUIZ ---------------- */
+  function findCatIndex(id){
+    for(var i=0;i<DATA.length;i++){ if(DATA[i].id === id) return i; }
+    return 0;
+  }
+
+  function startCategory(id){
+    state.catIndex = findCatIndex(id);
+    state.order = shuffle(DATA[state.catIndex].questions.map(function(_,i){return i;}));
+    state.qIndex = 0;
+    state.correctCount = 0;
+    state.hearts = 3;
+    state.score = 0;
+    state.streak = 0;
+    state.failed = false;
+    showScreen('quiz-screen');
+    renderHearts();
+    renderScore();
+    renderQuestion();
+  }
+
+  function renderHearts(){
+    var html = '';
+    for(var i=0;i<3;i++){
+      html += '<span class="'+(i < state.hearts ? '' : 'lost')+'">❤</span>';
+    }
+    $('hearts').innerHTML = html;
+  }
+  function renderScore(){
+    $('score-tag').textContent = 'คะแนน ' + state.score;
+  }
+
+  function renderQuestion(){
+    state.answered = false;
+    var cat = DATA[state.catIndex];
+    var total = state.order.length;
+    var qData = cat.questions[state.order[state.qIndex]];
+
+    $('question-panel').style.setProperty('--cat-color', cat.color);
+    $('progress-fill').style.background = cat.color;
+    $('progress-fill').style.width = ((state.qIndex) / total * 100) + '%';
+    $('q-count').textContent = 'คำถามที่ ' + (state.qIndex+1) + ' จาก ' + total;
+    $('cat-eyebrow').textContent = cat.name;
+    $('cat-eyebrow').style.color = cat.color;
+    $('question-text').textContent = qData.q;
+
+    var correctText = qData.choices[0];
+    var shuffledChoices = shuffle(qData.choices);
+    var correctIdx = shuffledChoices.indexOf(correctText);
+
+    var choicesEl = $('choices');
+    choicesEl.innerHTML = '';
+    shuffledChoices.forEach(function(choiceText, idx){
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = '<span class="letter">'+LETTERS[idx]+'</span><span>'+choiceText+'</span>';
+      btn.addEventListener('click', function(){
+        selectAnswer(idx, correctIdx, qData.explain, choicesEl);
+      });
+      choicesEl.appendChild(btn);
+    });
+
+    $('feedback-panel').classList.remove('show');
+    $('next-wrap').style.display = 'none';
+  }
+
+  function selectAnswer(idx, correctIdx, explain, choicesEl){
+    if(state.answered) return;
+    state.answered = true;
+
+    var buttons = choicesEl.querySelectorAll('.choice-btn');
+    buttons.forEach(function(b){ b.classList.add('disabled'); });
+
+    var isCorrect = (idx === correctIdx);
+    buttons[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+    if(!isCorrect){ buttons[correctIdx].classList.add('correct'); }
+
+    var fb = $('feedback-panel');
+    var title = $('feedback-title');
+    var text = $('feedback-text');
+    fb.classList.add('show');
+
+    if(isCorrect){
+      state.correctCount++;
+      state.streak++;
+      var gain = 10 + (state.streak >= 3 ? 5 : 0);
+      state.score += gain;
+      title.className = 'feedback-title ok';
+      title.textContent = state.streak >= 3 ? 'ถูกต้อง! (ต่อเนื่อง +' + gain + ' คะแนน)' : 'ถูกต้อง! +' + gain + ' คะแนน';
+    } else {
+      state.streak = 0;
+      state.hearts--;
+      title.className = 'feedback-title no';
+      title.textContent = 'ยังไม่ถูก';
+    }
+    text.textContent = explain;
+    renderHearts();
+    renderScore();
+
+    $('next-wrap').style.display = 'block';
+    var btnNext = $('btn-next');
+    btnNext.textContent = (state.qIndex + 1 >= state.order.length || state.hearts <= 0) ? 'ดูผลลัพธ์' : 'ข้อถัดไป';
+  }
+
+  $('btn-next').addEventListener('click', function(){
+    if(state.hearts <= 0){
+      finishStation(true);
+      return;
+    }
+    state.qIndex++;
+    if(state.qIndex >= state.order.length){
+      finishStation(false);
+    } else {
+      renderQuestion();
+    }
+  });
+
+  function finishStation(failedOut){
+    var total = state.order.length;
+    var pct = state.correctCount / total;
+    var stars = 0;
+    if(!failedOut){
+      if(pct >= 0.9) stars = 3;
+      else if(pct >= 0.7) stars = 2;
+      else if(pct >= 0.5) stars = 1;
+      else stars = 0;
+    }
+    var catId = DATA[state.catIndex].id;
+    progress[catId] = Math.max(progress[catId], stars);
+
+    $('progress-fill').style.width = '100%';
+
+    var starsEl = $('result-stars');
+    var html = '';
+    for(var i=1;i<=3;i++){ html += '<span class="'+(i<=stars?'lit':'')+'">★</span>'; }
+    starsEl.innerHTML = html;
+
+    $('result-title').textContent = failedOut ? 'หัวใจหมดแล้ว' :
+      (stars===3 ? 'ยอดเยี่ยมมาก!' : stars===2 ? 'เก่งมาก!' : stars===1 ? 'ผ่านแล้ว!' : 'ลองใหม่อีกครั้งนะ');
+    $('result-stat').textContent = 'ตอบถูก ' + state.correctCount + '/' + total + ' ข้อ · คะแนน ' + state.score;
+    $('result-msg').textContent = failedOut
+      ? 'หัวใจหมดก่อนจบด่าน ทบทวนคำอธิบายแล้วลองใหม่อีกครั้งได้เลย'
+      : 'เก็บดาวให้ครบ 3 ดวงในทุกด่าน เพื่อรับตราพลเมืองดี';
+
+    showScreen('result-screen');
+  }
+
+  $('btn-retry').addEventListener('click', function(){
+    startCategory(DATA[state.catIndex].id);
+  });
+  $('btn-tomap').addEventListener('click', function(){
+    renderMap();
+    showScreen('map-screen');
+  });
+  $('btn-back').addEventListener('click', function(){
+    renderMap();
+    showScreen('map-screen');
+  });
+  $('btn-start').addEventListener('click', function(){
+    showScreen('student-screen');
+  });
+
+  $('btn-student-continue').addEventListener('click', function(){
+    var name = $('input-name').value.trim();
+    var klass = $('input-class').value.trim();
+    var number = $('input-number').value.trim();
+    var errorEl = $('student-error');
+    if(!name || !klass || !number){
+      errorEl.textContent = 'กรุณากรอกข้อมูลให้ครบทุกช่องก่อนเริ่มเล่น';
+      return;
+    }
+    errorEl.textContent = '';
+    state.student = { name:name, klass:klass, number:number };
+    renderMap();
+    showScreen('map-screen');
+  });
+
+  function renderCertificate(){
+    var totalStars = 0;
+    DATA.forEach(function(c){ totalStars += progress[c.id]; });
+    var s = state.student;
+    $('cert-name').textContent = s.name || '-';
+    $('cert-class').textContent = 'ชั้น ' + (s.klass || '-') + '  เลขที่ ' + (s.number || '-');
+    $('cert-stars').textContent = totalStars;
+    var d = new Date();
+    var months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    $('cert-date').textContent = d.getDate() + ' ' + months[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+  }
+
+  $('btn-open-cert').addEventListener('click', function(){
+    renderCertificate();
+    showScreen('cert-screen');
+  });
+  $('btn-cert-back').addEventListener('click', function(){
+    showScreen('map-screen');
+  });
+  $('btn-cert-print').addEventListener('click', function(){
+    window.print();
+  });
+
+  renderMap();
+})();
+</script>
+</body>
+</html>
